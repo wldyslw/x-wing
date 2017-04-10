@@ -1,0 +1,52 @@
+@font-face {
+    font-family: Akrobat-Thin;
+    src: url("../fonts/Akrobat-Thin.otf");
+}
+
+@font-face {
+    font-family: Akrobat-Black;
+    src: url("../fonts/Akrobat-Black.otf");
+}
+
+@font-face {
+    font-family: Akrobat-Regular;
+    src: url("../fonts/Akrobat-Regular.otf");
+}
+
+* {
+    font-family: Akrobat-Regular;
+    padding: 0;
+    margin: 0;
+    font-size: 10px;
+}
+
+body {
+    overflow: hidden;
+}
+
+.body-scrollfix {
+    overflow: hidden;
+}
+
+a, a:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+/*::selection {
+  background-color: #febf32;
+  color: white;
+}
+::-moz-selection {
+  background-color: #febf32;
+  color: white;
+}*/
+
+/*.noselect {
+    cursor: default;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}*/
