@@ -14,9 +14,10 @@ Globals = {
 Objects = {
     xwing: null,
     tunnelSectionArr: [],
-    temp: null
+    currentBarier: null
 },
 Game = {
+    status: 'normal',
     speed: 16,
 },
 Colors = {
@@ -133,8 +134,30 @@ function normalize(v,vmin,vmax,tmin, tmax){
     return tmin + (pc * dt); 
 }
 
+function handleCollision() {
+    const Player = Objects.xwing.mesh;
+    /*for (let vertexIndex = 0; vertexIndex < Player.geometry.vertices.length; vertexIndex++){       
+        var localVertex = Player.geometry.vertices[vertexIndex].clone();
+        var globalVertex = Player.matrix.multiplyVector3(localVertex);
+        var directionVector = globalVertex.subSelf( Player.position );
+
+        var ray = new THREE.Ray( Player.position, directionVector.clone().normalize() );
+        var collisionResults = ray.intersectObjects( Objects.currentBarier );
+        if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
+        {
+            console.log('Collided');
+        }
+    }*/
+    if(Objects.currentBarier) {
+        var firstBB = new THREE.Box3().setFromObject(Objects.xwing.mesh);
+        var secondBB = new THREE.Box3().setFromObject(Objects.currentBarier.mesh);
+        var collision = firstBB.intersectsBox(secondBB);
+        if(collision) console.log('Collided');
+    }
+}
+
 function xWing() {
-    this.mesh = new THREE.Object3D();
+    this.mesh = new THREE.Mesh();
 
     const fuselage = new xWing.fuselage();
     this.mesh.add(fuselage.mesh);
@@ -168,7 +191,7 @@ xWing.materialA = new THREE.MeshPhongMaterial({color:0x666666, shading:THREE.Fla
 xWing.materialB = new THREE.MeshPhongMaterial({color:0x444444, shading:THREE.FlatShading,});
 
 xWing.fuselage = function() {
-    this.mesh = new THREE.Object3D();
+    this.mesh = new THREE.Mesh();
 
     const bodyBack  = new THREE.Mesh(new THREE.BoxGeometry(15, 20, 30), xWing.materialA);
     bodyBack.castShadow = true;
@@ -202,7 +225,7 @@ xWing.fuselage = function() {
 }
 
 xWing.engine = function() {
-    this.mesh = new THREE.Object3D();
+    this.mesh = new THREE.Mesh();
     const engFrontG = new THREE.BoxGeometry(10,10,20);
     const engBackG = new THREE.BoxGeometry(7,7,20);
 
@@ -219,7 +242,7 @@ xWing.engine = function() {
 }
 
 xWing.wingA = function() {
-    this.mesh = new THREE.Object3D();
+    this.mesh = new THREE.Mesh();
 
     const wingG = new THREE.BoxGeometry(70,4,28);
     wingG.vertices[5].z -= 15;
@@ -253,7 +276,7 @@ xWing.wingA = function() {
 }
 
 xWing.wingB = function() {
-    this.mesh = new THREE.Object3D();
+    this.mesh = new THREE.Mesh();
 
     const wingG = new THREE.BoxGeometry(70,4,28);
     wingG.vertices[0].z -= 15;
@@ -286,6 +309,7 @@ xWing.wingB = function() {
     this.mesh.add(antenna);
 }
 
+//TODO
 xWing.cabin = function() {}
 
 xWing.create = function () {
@@ -298,6 +322,9 @@ function tunnel() {
         Objects.tunnelSectionArr[i] = new tunnel.section();
         Objects.tunnelSectionArr[i].mesh.position.z = -i * 256;
         Objects.tunnelSectionArr[i].mesh.position.y = -130;
+        //Objects.currentBarier = new tunnel.barrier();
+        /*Objects.currentBarier.mesh.position.y = 250;
+        Objects.tunnelSectionArr[i].mesh.add(Objects.currentBarier.mesh);*/
         Globals.scene.add(Objects.tunnelSectionArr[i].mesh);
     }
 }
@@ -371,7 +398,7 @@ tunnel.section = function() {
         blockRightArr[i].position.z = Math.random() * 220;
         blockRightArr[i].position.y = 120 + Math.random() * 200;
 
-        blockRightArr[i].scale.set(1 + Math.random(),1 + Math.random()*2,1 + Math.random())
+        blockRightArr[i].scale.set(1 + Math.random(),1 + Math.random()*2,1 + Math.random());
 
         blockRightArr[i].castShadow = true;
         blockRightArr[i].receiveShadow = true;
@@ -382,13 +409,59 @@ tunnel.section = function() {
     this.mesh.add(base,wallL,wallR);
 }
 
+tunnel.barrier = function() {
+    this.mesh = new THREE.Object3D();
+
+    const randomizer = 1 + Math.round(Math.random() * 4);
+
+    const baseMk1Geom = new THREE.BoxGeometry(800, 100, 100);
+    const baseMk1 = new THREE.Mesh(baseMk1Geom, xWing.materialB);
+
+    const blockGeom = new THREE.BoxGeometry(60, 60, 60);
+    const blockArr = []
+    for(let i = 0; i <= 16; i++) {
+        blockArr.push(new THREE.Mesh(blockGeom, xWing.materialB));
+        blockArr[i].position.x = -400 + i * 50;
+        blockArr[i].position.y = (Math.random() > 0.5 ? -1 : 1) * Math.random() * 10;
+        blockArr[i].scale.set(1 + Math.random()*2,1 + Math.random()*2,1 + Math.random()*2);
+        baseMk1.add(blockArr[i]);
+    }
+
+    const baseMk2 = baseMk1.clone();
+    baseMk2.applyMatrix(new THREE.Matrix4().makeRotationZ(Math.PI/4));
+    const baseMk3 = baseMk1.clone();
+    baseMk3.applyMatrix(new THREE.Matrix4().makeRotationZ(-Math.PI/4))
+    const baseMk4 = baseMk1.clone();
+    baseMk4.applyMatrix(new THREE.Matrix4().makeRotationZ(-Math.PI/2))
+    
+    if(randomizer == 1 || randomizer == 2) {
+        this.mesh.add(baseMk1);
+    }
+    if(randomizer == 3) {
+        //this.mesh.add(baseMk2);
+    }
+    if(randomizer == 4) {
+        //this.mesh.add(baseMk3);
+    }
+    if(randomizer == 5 || randomizer == 3 || randomizer == 4) {
+        this.mesh.add(baseMk4);
+    }
+}
+
 tunnel.move = function() {
     Objects.tunnelSectionArr.forEach((e,i) => {
         e.mesh.position.z += Game.speed;
-        if(e.mesh.position.z > 248) {
+        if(e.mesh.position.z > (256 - Game.speed)) {
             Globals.scene.remove(e.mesh);
             e.mesh.position.z = -2304;
             Globals.scene.add(e.mesh);
+            if(i == 9) {
+                if(Objects.currentBarier)
+                    Objects.tunnelSectionArr[i].mesh.remove(Objects.currentBarier.mesh);
+                Objects.currentBarier = new tunnel.barrier();
+                Objects.currentBarier.mesh.position.y = 250;
+                Objects.tunnelSectionArr[i].mesh.add(Objects.currentBarier.mesh);
+            }
         }
     });
 }
@@ -397,7 +470,8 @@ function loop(){ 
     Globals.renderer.render(Globals.scene, Globals.camera);
 
     updateSpacePlane();
-    tunnel.move()
+    tunnel.move();
+    handleCollision();
  
     requestAnimationFrame(loop);
 }
