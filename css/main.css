@@ -1,7 +1,67 @@
 #world {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
     background: #212429
 }
+
+.btn {
+    border: none;
+    outline: none;
+    transition: all .2s;
+}
+
+.btn:hover {
+    cursor: pointer;
+}
+
+.btn-hamburger {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    height: 50px;
+    width: 50px;
+    background-color: #212429;
+    border-radius: 50%;
+}
+
+.hamburger {
+    margin: auto;
+    position: relative;
+}
+
+.hamburger, .hamburger::before, .hamburger::after {
+    height: 2px;
+    width: 20px;
+    background-color: #fff;
+}
+
+.hamburger::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 7px;
+}
+
+.hamburger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 7px;
+}
+
+.score {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 4rem;
+}
+
+/*.score::before {
+    content: 'Score: ';
+}*/
