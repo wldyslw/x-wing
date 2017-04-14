@@ -88,7 +88,7 @@ const Globals = {
         Globals.camera.updateProjectionMatrix();
     },
 
-    handleMouseMove: function() {
+    handleMouseMove: function(event) {
         var tx = -1 + (event.clientX / Globals.sceneWidth) * 2;    
         var ty = 1 - (event.clientY / Globals.sceneHeight) * 2;
         Globals.MousePos = {x: tx, y: ty};
@@ -504,7 +504,7 @@ function init() {
     Game.clock.start();
     Globals.loop();
 
-    document.addEventListener('mousemove', Globals.handleMouseMove, false);
+    window.addEventListener('mousemove', Globals.handleMouseMove, false);
 
     Globals.renderer.render(Globals.scene, Globals.camera);
 }
