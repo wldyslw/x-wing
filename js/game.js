@@ -42,12 +42,10 @@ const Globals = {
     loop: function(){ 
         Globals.renderer.render(Globals.scene, Globals.camera);
 
+        Game.frameRate = Math.floor(1 / Game.frameClock.getDelta());
+        document.getElementById('fps').innerHTML = `@${Game.frameRate}`;
+
         if(Game.status === 'normal' || Game.status === 'demo') {
-            Game.frameCounter++;
-            if(Game.clock.getElapsedTime() - Math.floor(Game.clock.getElapsedTime()) < .01) {
-                document.getElementById('fps').innerHTML = `@${Game.frameCounter}`;
-                Game.frameCounter = 0;
-            }
             tunnel.move();
             Game.updateScore();
             Game.handleCollision();
@@ -106,13 +104,14 @@ const Objects = {
 const Game = {
     status: 'normal',
     score: 0,
-    speed: 30,
+    speed: 32,
     scoreContainer: document.getElementById('score'),
     retryContainer: document.getElementById('retry'),
     shadowContainer: document.getElementById('shadow'),
     clock: new THREE.Clock(false),
     elapsedTime: 0,
-    frameCounter: 0,
+    frameRate: 0,
+    frameClock: new THREE.Clock(false),
     collisionCounter: 0,
 
     updateSpacePlane: function() {
@@ -144,7 +143,7 @@ const Game = {
 
     collide: function() {
         Game.collisionCounter++;
-        if(Game.collisionCounter > 1 && Game.elapsedTime > .3) { //TODO: make a fuction to find optimal collision count
+        if(Game.collisionCounter > 1 && Game.frameRate * Game.elapsedTime > 60) { //TODO: make a fuction to find optimal collision count
             Game.clock.stop();
             Game.status = 'gameover';
             Game.scoreContainer.innerHTML = 'Game Over';
@@ -157,8 +156,10 @@ const Game = {
 
     updateScore: function() {
         Game.elapsedTime = Game.clock.getElapsedTime();
-        Game.speed = 30 + 2 * Math.floor(Game.elapsedTime / 5);
-        Game.score = Math.floor(Game.elapsedTime * 30 + Game.elapsedTime * Game.elapsedTime / 10);
+        if(Game.speed <= 64) {
+            Game.speed = 32 + Math.floor(Game.elapsedTime / 5);
+            Game.score = Math.floor(Game.elapsedTime * 30 + Game.elapsedTime * Game.elapsedTime / 10);
+        } else Game.score = Game.speed * Game.elapsedTime;
         Game.scoreContainer.innerHTML = 'Score: ' + Game.score;
     },
 
@@ -167,7 +168,7 @@ const Game = {
         Game.scoreContainer.classList.remove('gameover');
         Game.retryContainer.classList.remove('btn-retry-active');
         Game.clock.start();
-        Game.speed = 30;
+        Game.speed = 32;
         Game.status = 'normal';
         Objects.xwing.mesh.position.y = 500;
         Globals.scene.add(Objects.xwing.mesh);
@@ -471,7 +472,7 @@ const tunnel = {
             e.mesh.position.z += Game.speed;
             if(e.mesh.position.z > (256 - Game.speed)) {
                 Globals.scene.remove(e.mesh);
-                e.mesh.position.z = -2304;
+                if(Game.speed <= 64) e.mesh.position.z = -2304 + Math.floor(Game.elapsedTime / 5);
                 Globals.scene.add(e.mesh);
                 if(i == 9) {
                     if(Objects.currentBarier) {
@@ -502,6 +503,7 @@ function init() {
     tunnel.create();
 
     Game.clock.start();
+    Game.frameClock.start();
     Globals.loop();
 
     window.addEventListener('mousemove', Globals.handleMouseMove, false);
