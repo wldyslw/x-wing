@@ -352,9 +352,9 @@ const tunnel = {
     section: function() {
         this.mesh = new THREE.Object3D();
 
-        const base = new THREE.Mesh(new THREE.BoxGeometry(800,50,256), Materials.materialB);
-        const wallL = new THREE.Mesh(new THREE.BoxGeometry(300,400,256), Materials.materialB);
-        const wallR = new THREE.Mesh(new THREE.BoxGeometry(300,400,256), Materials.materialB);
+        const base = new THREE.Mesh(new THREE.BoxGeometry(800,50,250), Materials.materialB);
+        const wallL = new THREE.Mesh(new THREE.BoxGeometry(300,400,250), Materials.materialB);
+        const wallR = new THREE.Mesh(new THREE.BoxGeometry(300,400,250), Materials.materialB);
 
         wallL.position.x = -500;
         wallL.position.y = 220;
@@ -470,9 +470,9 @@ const tunnel = {
     move: function() {
         Objects.tunnelSectionArr.forEach((e,i) => {
             e.mesh.position.z += Game.speed;
-            if(e.mesh.position.z > (256 - Game.speed)) {
+            if(e.mesh.position.z > 100) {
                 Globals.scene.remove(e.mesh);
-                if(Game.speed <= 64) e.mesh.position.z = -2304 + Math.floor(Game.elapsedTime / 5);
+                e.mesh.position.z += -2250;
                 Globals.scene.add(e.mesh);
                 if(i == 9) {
                     if(Objects.currentBarier) {
