@@ -15,7 +15,7 @@ const Globals = {
 
         Globals.scene = new THREE.Scene();
 
-        Globals.scene.fog = new THREE.Fog(0x212429, 1000, 2000);
+        Globals.scene.fog = new THREE.Fog(0x212429, 800, 2500);
 
         Globals.camera = new THREE.PerspectiveCamera(
             60, Globals.sceneWidth / Globals.sceneHeight, 1, 10000
@@ -62,7 +62,7 @@ const Globals = {
         const shadowLight = new THREE.DirectionalLight(0xffffff, .9);
         const ambientLight = new THREE.AmbientLight(0xada7e2, .5);
      
-        shadowLight.position.set(0, 400, 200);
+        shadowLight.position.set(0, 200, 200);
         shadowLight.castShadow = true;
 
         shadowLight.shadow.camera.left = -400;
@@ -106,10 +106,12 @@ const Objects = {
 const Game = {
     status: 'normal',
     score: 0,
-    speed: 32,
+    speed: 30,
     scoreContainer: document.getElementById('score'),
     retryContainer: document.getElementById('retry'),
+    shadowContainer: document.getElementById('shadow'),
     clock: new THREE.Clock(false),
+    elapsedTime: 0,
     frameCounter: 0,
     collisionCounter: 0,
 
@@ -142,10 +144,11 @@ const Game = {
 
     collide: function() {
         Game.collisionCounter++;
-        if(Game.collisionCounter > 5 && Game.clock.getElapsedTime() > .5) { //TODO: make a fuction to find optimal collision count
+        if(Game.collisionCounter > 1 && Game.elapsedTime > .3) { //TODO: make a fuction to find optimal collision count
             Game.clock.stop();
             Game.status = 'gameover';
             Game.scoreContainer.innerHTML = 'Game Over';
+            Game.shadowContainer.classList.add('opaque');
             Game.scoreContainer.classList.add('gameover');
             Game.retryContainer.classList.add('btn-retry-active');
             Globals.scene.remove(Objects.xwing.mesh);
@@ -153,15 +156,20 @@ const Game = {
     },
 
     updateScore: function() {
-        Game.score = Math.floor(Game.speed * Game.clock.getElapsedTime());
+        Game.elapsedTime = Game.clock.getElapsedTime();
+        Game.speed = 30 + 2 * Math.floor(Game.elapsedTime / 5);
+        Game.score = Math.floor(Game.elapsedTime * 30 + Game.elapsedTime * Game.elapsedTime / 10);
         Game.scoreContainer.innerHTML = 'Score: ' + Game.score;
     },
 
     retry: function() {
+        Game.shadowContainer.classList.remove('opaque');
         Game.scoreContainer.classList.remove('gameover');
         Game.retryContainer.classList.remove('btn-retry-active');
         Game.clock.start();
+        Game.speed = 30;
         Game.status = 'normal';
+        Objects.xwing.mesh.position.y = 500;
         Globals.scene.add(Objects.xwing.mesh);
     }, 
 };
@@ -471,7 +479,6 @@ const tunnel = {
                         Objects.tunnelSectionArr[i].mesh.remove(Objects.currentBarier.mesh);
                     }
                     Objects.currentBarier = new tunnel.barrier();
-                    //Objects.currentBarier.mesh.position.y = 250;
                     Objects.tunnelSectionArr[i].mesh.add(Objects.currentBarier.mesh);
                 }
             }
