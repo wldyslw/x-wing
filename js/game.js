@@ -42,12 +42,17 @@ const Globals = {
     loop: function(){ 
         Globals.renderer.render(Globals.scene, Globals.camera);
 
-        if(Game.status === 'normal') {
+        if(Game.status === 'normal' || Game.status === 'demo') {
+            Game.frameCounter++;
+            if(Game.clock.getElapsedTime() - Math.floor(Game.clock.getElapsedTime()) < .01) {
+                document.getElementById('fps').innerHTML = `@${Game.frameCounter}`;
+                Game.frameCounter = 0;
+            }
             tunnel.move();
             Game.updateScore();
             Game.handleCollision();
         }
-        Game.updateSpacePlane();
+        if(Game.status !== 'demo') Game.updateSpacePlane();
      
         requestAnimationFrame(Globals.loop);
     },
@@ -91,18 +96,21 @@ const Globals = {
 
     //
 };
+
 const Objects = {
     xwing: null,
     tunnelSectionArr: [],
     currentBarier: null
 };
+
 const Game = {
     status: 'normal',
     score: 0,
     speed: 32,
     scoreContainer: document.getElementById('score'),
-    startTime: Date.now(),
-    deltaT: 0,
+    retryContainer: document.getElementById('retry'),
+    clock: new THREE.Clock(false),
+    frameCounter: 0,
     collisionCounter: 0,
 
     updateSpacePlane: function() {
@@ -134,28 +142,32 @@ const Game = {
 
     collide: function() {
         Game.collisionCounter++;
-        if(Game.collisionCounter > 1) { //TODO: make a fuction to find optimal collision count
+        if(Game.collisionCounter > 5 && Game.clock.getElapsedTime() > .5) { //TODO: make a fuction to find optimal collision count
+            Game.clock.stop();
             Game.status = 'gameover';
             Game.scoreContainer.innerHTML = 'Game Over';
             Game.scoreContainer.classList.add('gameover');
-            document.getElementById('retry').classList.add('btn-retry-active');
+            Game.retryContainer.classList.add('btn-retry-active');
             Globals.scene.remove(Objects.xwing.mesh);
         }
     },
 
     updateScore: function() {
-        Game.deltaT = Date.now() - Game.startTime;
-        Game.score = Math.floor(Game.speed * Game.deltaT / 1000);
+        Game.score = Math.floor(Game.speed * Game.clock.getElapsedTime());
         Game.scoreContainer.innerHTML = 'Score: ' + Game.score;
-    }
+    },
+
+    retry: function() {
+        Game.scoreContainer.classList.remove('gameover');
+        Game.retryContainer.classList.remove('btn-retry-active');
+        Game.clock.start();
+        Game.status = 'normal';
+        Globals.scene.add(Objects.xwing.mesh);
+    }, 
 };
-const Colors = {
-    red:0xf25346,
-    white:0xd8d0d1,
-    brown:0x59332e,
-    pink:0xF5986E,
-    brownDark:0x23190f,
-    blue:0x68c3c0
+const Materials = {
+    materialA: new THREE.MeshPhongMaterial({color:0x666666, shading:THREE.FlatShading,}),
+    materialB: new THREE.MeshPhongMaterial({color:0x444444, shading:THREE.FlatShading,}),
 };
 
 const xWing = {
@@ -196,7 +208,7 @@ const xWing = {
     fuselage: function() {
         this.mesh = new THREE.Mesh();
 
-        const bodyBack  = new THREE.Mesh(new THREE.BoxGeometry(15, 20, 30), xWing.materialA);
+        const bodyBack  = new THREE.Mesh(new THREE.BoxGeometry(15, 20, 30), Materials.materialA);
         bodyBack.castShadow = true;
         bodyBack.receiveShadow = true;
         this.mesh.add(bodyBack);
@@ -204,7 +216,7 @@ const xWing = {
         const bodyMidGeom = new THREE.BoxGeometry(15, 20, 10);
         bodyMidGeom.vertices[6].y += 5;
         bodyMidGeom.vertices[3].y += 5;
-        const bodyMid = new THREE.Mesh(bodyMidGeom, xWing.materialA);
+        const bodyMid = new THREE.Mesh(bodyMidGeom, Materials.materialA);
         bodyMid.position.z = -20;
         bodyMid.castShadow = true;
         bodyMid.receiveShadow = true;
@@ -219,7 +231,7 @@ const xWing = {
         bodyNoseGeom.vertices[1].x -= 5;
         bodyNoseGeom.vertices[4].y -= 6;
         bodyNoseGeom.vertices[4].x += 5;
-        const bodyNose = new THREE.Mesh(bodyNoseGeom, xWing.materialA);
+        const bodyNose = new THREE.Mesh(bodyNoseGeom, Materials.materialA);
         bodyNose.position.z = -65;
         bodyNose.position.y += 2.5;
         bodyNose.castShadow = true;
@@ -232,12 +244,12 @@ const xWing = {
         const engFrontG = new THREE.BoxGeometry(10,10,20);
         const engBackG = new THREE.BoxGeometry(7,7,20);
 
-        const engFront = new THREE.Mesh(engFrontG, xWing.materialA);
+        const engFront = new THREE.Mesh(engFrontG, Materials.materialA);
         engFront.castShadow = true;
         engFront.receiveShadow = true;
         this.mesh.add(engFront);
 
-        const engBack = new THREE.Mesh(engBackG, xWing.materialB);
+        const engBack = new THREE.Mesh(engBackG, Materials.materialB);
         engBack.castShadow = true;
         engBack.receiveShadow = true;
         engBack.position.z += 20;
@@ -250,7 +262,7 @@ const xWing = {
         const wingG = new THREE.BoxGeometry(70,4,28);
         wingG.vertices[5].z -= 15;
         wingG.vertices[7].z -= 15;
-        const wing = new THREE.Mesh(wingG, xWing.materialA);
+        const wing = new THREE.Mesh(wingG, Materials.materialA);
 
         wing.castShadow = true;
         wing.receiveShadow = true;
@@ -267,7 +279,7 @@ const xWing = {
 
         this.mesh.add(eng.mesh);
 
-        const antenna = new THREE.Mesh(new THREE.BoxGeometry(2,2,50), xWing.materialA);
+        const antenna = new THREE.Mesh(new THREE.BoxGeometry(2,2,50), Materials.materialA);
         antenna.position.x -= 34;
         antenna.position.y += 3;
         antenna.position.z -= 26;
@@ -284,7 +296,7 @@ const xWing = {
         const wingG = new THREE.BoxGeometry(70,4,28);
         wingG.vertices[0].z -= 15;
         wingG.vertices[2].z -= 15;
-        const wing = new THREE.Mesh(wingG, xWing.materialA);
+        const wing = new THREE.Mesh(wingG, Materials.materialA);
 
         wing.castShadow = true;
         wing.receiveShadow = true;
@@ -301,7 +313,7 @@ const xWing = {
 
         this.mesh.add(eng.mesh);
 
-        const antenna = new THREE.Mesh(new THREE.BoxGeometry(2,2,50), xWing.materialA);
+        const antenna = new THREE.Mesh(new THREE.BoxGeometry(2,2,50), Materials.materialA);
         antenna.position.x += 34;
         antenna.position.y += 3;
         antenna.position.z -= 26;
@@ -331,9 +343,9 @@ const tunnel = {
     section: function() {
         this.mesh = new THREE.Object3D();
 
-        const base = new THREE.Mesh(new THREE.BoxGeometry(800,50,256), xWing.materialB);
-        const wallL = new THREE.Mesh(new THREE.BoxGeometry(300,400,256), xWing.materialB);
-        const wallR = new THREE.Mesh(new THREE.BoxGeometry(300,400,256), xWing.materialB);
+        const base = new THREE.Mesh(new THREE.BoxGeometry(800,50,256), Materials.materialB);
+        const wallL = new THREE.Mesh(new THREE.BoxGeometry(300,400,256), Materials.materialB);
+        const wallR = new THREE.Mesh(new THREE.BoxGeometry(300,400,256), Materials.materialB);
 
         wallL.position.x = -500;
         wallL.position.y = 220;
@@ -368,7 +380,7 @@ const tunnel = {
         const blockRightArr = [];
 
         for(let i = 0; i < 15; i++) {
-            blockBottomArr.push(new THREE.Mesh(blockBottomGeom, xWing.materialB));
+            blockBottomArr.push(new THREE.Mesh(blockBottomGeom, Materials.materialB));
             blockBottomArr[i].position.x = (Math.random() > 0.5 ? -1 : 1) * Math.random() * 400;
             blockBottomArr[i].position.z = Math.random() * 220;
             blockBottomArr[i].position.y = 0;
@@ -380,7 +392,7 @@ const tunnel = {
 
             this.mesh.add(blockBottomArr[i]);
 
-            blockLeftArr.push(new THREE.Mesh(blockLeftGeom, xWing.materialB));
+            blockLeftArr.push(new THREE.Mesh(blockLeftGeom, Materials.materialB));
             blockLeftArr[i].position.x = -360;
             blockLeftArr[i].position.z = Math.random() * 220;
             blockLeftArr[i].position.y = 120 + Math.random() * 200;
@@ -392,7 +404,7 @@ const tunnel = {
 
             this.mesh.add(blockLeftArr[i]);
 
-            blockRightArr.push(new THREE.Mesh(blockRightGeom, xWing.materialB));
+            blockRightArr.push(new THREE.Mesh(blockRightGeom, Materials.materialB));
             blockRightArr[i].position.x = 360;
             blockRightArr[i].position.z = Math.random() * 220;
             blockRightArr[i].position.y = 120 + Math.random() * 200;
@@ -408,47 +420,42 @@ const tunnel = {
         this.mesh.add(base,wallL,wallR);
     },
 
-    barrier: function() { //TODO: reimplement barrier generator
-        const randomizer = 1 + Math.round(Math.random() * 4);
+    barrier: function() {
+        const randomizer = 1 + Math.round(Math.random() * 3);
 
-        const baseMk1Geom = new THREE.BoxGeometry(800, 100, 100);
-        const baseMk1 = new THREE.Mesh(baseMk1Geom, xWing.materialB);
+        this.mesh = new THREE.Mesh();
+        this.mesh.castShadow = true;
+        this.mesh.receiveShadow = true;
 
-        baseMk1.castShadow = true;
-        baseMk1.receiveShadow = true;
+        for(let i = 0; i < 16; i++){
+            const block = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 100), Materials.materialB);
+            block.castShadow = true;
+            block.receiveShadow = true;
 
-        const blockGeom = new THREE.BoxGeometry(70, 70, 70);
-        const blockArr = []
-        for(let i = 0; i <= 16; i++) {
-            blockArr.push(new THREE.Mesh(blockGeom, xWing.materialB));
-            blockArr[i].position.x = -400 + i * 50;
-            blockArr[i].position.y = (Math.random() > 0.5 ? -1 : 1) * Math.random() * 10;
-            blockArr[i].scale.set(1 + Math.random()*2,1 + Math.random()*2,1 + Math.random()*2);
-            baseMk1.add(blockArr[i]);
-        }
-
-        const baseMk2 = baseMk1.clone();
-        baseMk2.applyMatrix(new THREE.Matrix4().makeRotationZ(Math.PI/4));
-        const baseMk3 = baseMk1.clone();
-        baseMk3.applyMatrix(new THREE.Matrix4().makeRotationZ(-Math.PI/4))
-        const baseMk4 = baseMk1.clone();
-        baseMk4.applyMatrix(new THREE.Matrix4().makeScale(.6,1.2,1));
-        baseMk4.applyMatrix(new THREE.Matrix4().makeRotationZ(-Math.PI/2));
-        
-        if(randomizer == 1 || randomizer == 2) {
-            baseMk1.position.y = (Math.random() > .5 ? -1 : 1) * Math.random() * 200;
-            this.mesh = baseMk1;
-        }
-        if(randomizer == 3) {
-            //
-        }
-        if(randomizer == 4) {
-            //
-        }
-        if(randomizer == 5 || randomizer == 3 || randomizer == 4) {
-            baseMk4.position.x = (Math.random() > .5 ? -1 : 1) * Math.random() * 300;
-            this.mesh = baseMk4;
-        }
+            if(randomizer == 1 || randomizer == 2) {
+                block.scale.set(1 + Math.random(), 1 + Math.random(), 1 + Math.random());
+                block.position.x = -400 + i * 50;
+                block.position.y = (Math.random() > 0.5 ? -1 : 1) * Math.random() * 10;
+                this.mesh.add(block);
+                this.mesh.position.y = 70 + Math.random() * 300;
+            }
+            if(randomizer == 3) {
+                if(i > 8) continue;
+                block.scale.set(1 + Math.random()*2, 1 + Math.random()*2, 1 + Math.random()*2);
+                block.position.y = i * 50;
+                block.position.x = (Math.random() > 0.5 ? -1 : 1) * Math.random() * 10;
+                this.mesh.add(block);
+                this.mesh.position.x = (Math.random() > .5 ? -1 : 1) * Math.random() * 300;
+            }
+            if(randomizer == 4) {
+                if(i > 8) continue;
+                block.scale.set(1 + Math.random()*2, 1 + Math.random()*2, 1 + Math.random()*2);
+                block.position.y = i * 50;
+                block.position.x = (i % 2 == 0 ? -250 : 250);
+                block.position.x += (Math.random() > 0.5 ? -1 : 1) * Math.random() * 10;
+                this.mesh.add(block);
+            }
+        };
     },
 
     move: function() {
@@ -464,7 +471,7 @@ const tunnel = {
                         Objects.tunnelSectionArr[i].mesh.remove(Objects.currentBarier.mesh);
                     }
                     Objects.currentBarier = new tunnel.barrier();
-                    Objects.currentBarier.mesh.position.y = 250;
+                    //Objects.currentBarier.mesh.position.y = 250;
                     Objects.tunnelSectionArr[i].mesh.add(Objects.currentBarier.mesh);
                 }
             }
@@ -487,6 +494,7 @@ function init() {
     xWing.create();
     tunnel.create();
 
+    Game.clock.start();
     Globals.loop();
 
     document.addEventListener('mousemove', Globals.handleMouseMove, false);
@@ -495,3 +503,4 @@ function init() {
 }
 
 window.addEventListener('load', init, false);
+Game.retryContainer.addEventListener('click', Game.retry, false);
