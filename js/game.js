@@ -9,13 +9,30 @@ const Globals = {
         x:0,
         y:0
     },
+
+    init: function() {
+        Globals.createScene();
+        Globals.handleWindowResize();
+        Globals.createLights();
+        tunnel.create();
+        Sounds.init();
+
+        Game.frameClock.start();
+        Globals.loop();
+
+        window.addEventListener('mousemove', Globals.handleMouseMove, false);
+        Game.retryContainer.addEventListener('click', Game.retry, false);
+
+        Globals.renderer.render(Globals.scene, Globals.camera);
+    },
+
     createScene: function() {
         Globals.sceneHeight = window.innerHeight;
         Globals.sceneWidth = window.innerWidth;
 
         Globals.scene = new THREE.Scene();
 
-        Globals.scene.fog = new THREE.Fog(0x212429, 800, 2500);
+        Globals.scene.fog = new THREE.Fog(0x212429, 800, 2200);
 
         Globals.camera = new THREE.PerspectiveCamera(
             60, Globals.sceneWidth / Globals.sceneHeight, 1, 10000
@@ -42,15 +59,15 @@ const Globals = {
     loop: function(){ 
         Globals.renderer.render(Globals.scene, Globals.camera);
 
-        Game.frameRate = Math.floor(1 / Game.frameClock.getDelta());
-        document.getElementById('fps').innerHTML = `@${Game.frameRate}`;
+        Game.delta = Game.frameClock.getDelta();
+        document.getElementById('fps').innerHTML = `@${Math.floor(1 / Game.delta)}, speed: ${Game.speed}`;
 
-        if(Game.status === 'normal' || Game.status === 'demo') {
-            tunnel.move();
+        if(Game.status === 'normal') {
             Game.updateScore();
             Game.handleCollision();
         }
-        if(Game.status !== 'demo') Game.updateSpacePlane();
+        if(Game.status == 'normal' || Game.status == 'gameover') Game.updateSpacePlane();
+        if(Game.status === 'normal' || Game.status === 'loaded') tunnel.move();
      
         requestAnimationFrame(Globals.loop);
     },
@@ -71,7 +88,7 @@ const Globals = {
         shadowLight.shadow.camera.far = 1000;
 
         shadowLight.shadow.mapSize.width = 2048;
-        shadowLight.shadow.mapSize.height = 2048;
+        shadowLight.shadow.mapSize.height = 2028;
         
         Globals.scene.add(hemisphereLight); 
         Globals.scene.add(ambientLight);
@@ -90,9 +107,7 @@ const Globals = {
         var tx = -1 + (event.clientX / Globals.sceneWidth) * 2;    
         var ty = 1 - (event.clientY / Globals.sceneHeight) * 2;
         Globals.MousePos = {x: tx, y: ty};
-    },
-
-    //
+    }
 };
 
 const Objects = {
@@ -102,17 +117,24 @@ const Objects = {
 };
 
 const Game = {
-    status: 'normal',
+    status: 'loading', //can be: loading -> loaded -> normal -> gameover/pause
     score: 0,
-    speed: 32,
+    speed: 30,
     scoreContainer: document.getElementById('score'),
     retryContainer: document.getElementById('retry'),
     shadowContainer: document.getElementById('shadow'),
     clock: new THREE.Clock(false),
     elapsedTime: 0,
-    frameRate: 0,
+    delta: 0,
     frameClock: new THREE.Clock(false),
     collisionCounter: 0,
+
+    startGame: function() {
+        document.getElementById('menu').classList.add('fadeout');
+        Game.status = 'normal';
+        Game.clock.start();
+        xWing.create();
+    },
 
     updateSpacePlane: function() {
         const targetY = normalize(Globals.MousePos.y, -.8, .8, 0, 250);
@@ -143,24 +165,26 @@ const Game = {
 
     collide: function() {
         Game.collisionCounter++;
-        if(Game.collisionCounter > 1 && Game.frameRate * Game.elapsedTime > 60) { //TODO: make a fuction to find optimal collision count
+        if(Game.collisionCounter > 2 / (Game.delta * Game.speed) && Game.elapsedTime / Game.delta > 20) {
+            if(Sounds.explode) Sounds.explode.play();
             Game.clock.stop();
             Game.status = 'gameover';
+            Globals.scene.remove(Objects.xwing.mesh);
+            Game.speed = 0;
             Game.scoreContainer.innerHTML = 'Game Over';
             Game.shadowContainer.classList.add('opaque');
             Game.scoreContainer.classList.add('gameover');
             Game.retryContainer.classList.add('btn-retry-active');
-            Globals.scene.remove(Objects.xwing.mesh);
         }
     },
 
     updateScore: function() {
         Game.elapsedTime = Game.clock.getElapsedTime();
-        if(Game.speed <= 64) {
-            Game.speed = 32 + Math.floor(Game.elapsedTime / 5);
-            Game.score = Math.floor(Game.elapsedTime * 30 + Game.elapsedTime * Game.elapsedTime / 10);
-        } else Game.score = Game.speed * Game.elapsedTime;
-        Game.scoreContainer.innerHTML = 'Score: ' + Game.score;
+        if(Game.speed < 60) {
+            Game.speed = 30 + Math.floor(Game.elapsedTime / 4);
+        }
+        Game.score += Game.speed * Game.delta;
+        Game.scoreContainer.innerHTML = 'Score: ' + Math.floor(Game.score);
     },
 
     retry: function() {
@@ -168,15 +192,32 @@ const Game = {
         Game.scoreContainer.classList.remove('gameover');
         Game.retryContainer.classList.remove('btn-retry-active');
         Game.clock.start();
-        Game.speed = 32;
+        Game.score = 0;
+        Game.speed = 30;
         Game.status = 'normal';
         Objects.xwing.mesh.position.y = 500;
         Globals.scene.add(Objects.xwing.mesh);
     }, 
 };
+
 const Materials = {
-    materialA: new THREE.MeshPhongMaterial({color:0x666666, shading:THREE.FlatShading,}),
-    materialB: new THREE.MeshPhongMaterial({color:0x444444, shading:THREE.FlatShading,}),
+    materialA: new THREE.MeshPhongMaterial({color:0x666666, shading:THREE.FlatShading}),
+    materialB: new THREE.MeshPhongMaterial({color:0x444444, shading:THREE.FlatShading}),
+};
+
+const Sounds = {
+    explode: Audio != undefined ? new Audio("audio/explode.mp3") : null,
+    mainTheme: Audio != undefined ? new Audio("audio/main.mp3") : null,
+    init: function() {
+        if (Audio != undefined) {
+            Sounds.explode.volume = .3;
+            Sounds.explode.loop = false;
+
+            Sounds.mainTheme.volume = .1;
+            Sounds.mainTheme.loop = true;
+            Sounds.mainTheme.play();
+        }
+    },
 };
 
 const xWing = {
@@ -210,9 +251,6 @@ const xWing = {
         wingBR.mesh.position.y -= 8
         this.mesh.add(wingBR.mesh);
     },
-
-    materialA: new THREE.MeshPhongMaterial({color:0x666666, shading:THREE.FlatShading,}),
-    materialB: new THREE.MeshPhongMaterial({color:0x444444, shading:THREE.FlatShading,}),
 
     fuselage: function() {
         this.mesh = new THREE.Mesh();
@@ -335,6 +373,7 @@ const xWing = {
 
     create: function () {
         Objects.xwing = new xWing.combinate();
+        Objects.xwing.mesh.position.y = 400;
         Globals.scene.add(Objects.xwing.mesh);
     }
 };
@@ -449,7 +488,7 @@ const tunnel = {
                 this.mesh.position.y = 70 + Math.random() * 300;
             }
             if(randomizer == 3) {
-                if(i > 8) continue;
+                if(i > 8) break;
                 block.scale.set(1 + Math.random()*2, 1 + Math.random()*2, 1 + Math.random()*2);
                 block.position.y = i * 50;
                 block.position.x = (Math.random() > 0.5 ? -1 : 1) * Math.random() * 10;
@@ -457,7 +496,7 @@ const tunnel = {
                 this.mesh.position.x = (Math.random() > .5 ? -1 : 1) * Math.random() * 300;
             }
             if(randomizer == 4) {
-                if(i > 8) continue;
+                if(i > 8) break;
                 block.scale.set(1 + Math.random()*2, 1 + Math.random()*2, 1 + Math.random()*2);
                 block.position.y = i * 50;
                 block.position.x = (i % 2 == 0 ? -250 : 250);
@@ -467,24 +506,26 @@ const tunnel = {
         };
     },
 
+    generateBarrier: function(i) {
+        if(Objects.currentBarier) {
+            Game.collisionCounter = 0;
+            Objects.tunnelSectionArr[i].mesh.remove(Objects.currentBarier.mesh);
+        }
+        Objects.currentBarier = new tunnel.barrier();
+        Objects.tunnelSectionArr[i].mesh.add(Objects.currentBarier.mesh);
+    },
+
     move: function() {
         Objects.tunnelSectionArr.forEach((e,i) => {
-            e.mesh.position.z += Game.speed;
-            if(e.mesh.position.z > 100) {
+            e.mesh.position.z += Game.status == 'normal' ? Math.round(Game.speed * Game.delta * 60) : 5;
+            if(e.mesh.position.z > 250) {
                 Globals.scene.remove(e.mesh);
                 e.mesh.position.z += -2250;
                 Globals.scene.add(e.mesh);
-                if(i == 9) {
-                    if(Objects.currentBarier) {
-                        Game.collisionCounter = 0;
-                        Objects.tunnelSectionArr[i].mesh.remove(Objects.currentBarier.mesh);
-                    }
-                    Objects.currentBarier = new tunnel.barrier();
-                    Objects.tunnelSectionArr[i].mesh.add(Objects.currentBarier.mesh);
-                }
+                if(i == 9 && Game.status == 'normal') tunnel.generateBarrier(i);
             }
         });
-    }
+    },
 };
  
 function normalize(v,vmin,vmax,tmin, tmax) { 
@@ -495,21 +536,8 @@ function normalize(v,vmin,vmax,tmin, tmax) { 
     return tmin + (pc * dt); 
 }
 
-function init() {
-    Globals.createScene();
-    Globals.handleWindowResize();
-    Globals.createLights();
-    xWing.create();
-    tunnel.create();
-
-    Game.clock.start();
-    Game.frameClock.start();
-    Globals.loop();
-
-    window.addEventListener('mousemove', Globals.handleMouseMove, false);
-
-    Globals.renderer.render(Globals.scene, Globals.camera);
-}
-
-window.addEventListener('load', init, false);
-Game.retryContainer.addEventListener('click', Game.retry, false);
+window.addEventListener('load', () => {
+    Game.status = 'loaded';
+    Globals.init();
+    document.getElementById('start').addEventListener('click', Game.startGame, false);
+}, false);
