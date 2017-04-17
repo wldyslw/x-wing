@@ -171,7 +171,7 @@ const Game = {
             Game.status = 'gameover';
             Globals.scene.remove(Objects.xwing.mesh);
             Game.speed = 0;
-            Game.scoreContainer.innerHTML = 'Game Over';
+            Game.scoreContainer.innerHTML = `Score: ${Math.floor(Game.score)}`;
             Game.shadowContainer.classList.add('opaque');
             Game.scoreContainer.classList.add('gameover');
             Game.retryContainer.classList.add('btn-retry-active');

@@ -36,6 +36,9 @@
 }
 
 .score {
+    display: block;
+    width: 100%;
+    text-align: center;
     position: absolute;
     top: 20px;
     left: 50%;
@@ -47,8 +50,20 @@
 
 .gameover {
     top: 50%;
+    margin-top: -20px;
     transform: translate(-50%, -50%);
+    font-size: 2rem;
+}
+
+.gameover::before {
+    display: block;
+    content: 'Game over';
+    position: absolute;
+    left: 50%;
+    bottom: 2.5rem;
+    transform: translateX(-50%);
     font-size: 5rem;
+    color: #fff;
 }
 
 .shadow {

@@ -69,7 +69,7 @@
     transform: translateX(-50%);
     height: 50px;
     width: 50px;
-    margin-bottom: -120px;
+    margin-bottom: -80px;
     background-color: lightgray;
     border-radius: 50%;
     transition: top .5s, bottom .5s;
