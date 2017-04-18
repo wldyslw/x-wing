@@ -117,9 +117,9 @@ const Objects = {
 };
 
 const Game = {
-    status: 'loading', //can be: loading -> loaded -> normal -> gameover/pause
+    status: 'loading', //can be: loading -> loaded -> normal -> gameover
     score: 0,
-    speed: 30,
+    speed: 0,
     scoreContainer: document.getElementById('score'),
     retryContainer: document.getElementById('retry'),
     shadowContainer: document.getElementById('shadow'),
@@ -132,6 +132,7 @@ const Game = {
     startGame: function() {
         document.getElementById('menu').classList.add('fadeout');
         Game.status = 'normal';
+        Game.speed = 30;
         Game.clock.start();
         xWing.create();
     },
