@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width = device-width, initial-scale = 1.0">
+        <title>The X-Wing Game</title>
+        <link rel="shortcut icon" type="image/png" href="img/logo.png">
+        <link rel="stylesheet" type="text/css" href="css/buttons.css">
+        <link rel="stylesheet" type="text/css" href="css/basic.css">
+        <link rel="stylesheet" type="text/css" href="css/main.css">
+    </head>
+
+    <body>
+        <nav id="menu" class="menu hidden">
+            <button class="btn btn-linkalike">Description</button>
+            <button class="btn btn-linkalike">Controls & mechanics</button>
+            <button class="btn btn-linkalike">Tech</button>
+        </nav>
+        <span class="logo noselect">X-Wing</span>
+        <button id="btn-hamburger" class="btn btn-hamburger menu-closed">
+            <div class="hamburger"></div>
+        </button>
+        <button id="btn-uparrow" class="btn btn-arrow hidden"></button>
+        <section id="top" class="section-img section-intro">
+            <a href="https://wldyslw.github.io/x-wing/" target="blank" class="btn btn-takeatour"></a>
+        </section>
+        <section id="intro" class="section-p section-intro-p">
+            <p>
+                <b>The X-Wing</b> is "endless runner" (or "flyer", to be accurate) 
+                about one of the most important moments 
+                in lifetime of the Galaxy-Far-Far-Away — the Battle of Yavin. 
+                During this cruel battle the Rebelion attempted to destroy enormously huge 
+                and powerfull weapon of Galactic Empire — 
+                the Death Star. And today outcome of the battle depends on <b>you.</b>
+            </p>
+            <div class="redline"></div>
+        </section>
+        <section id="history" class="section-img section-history">
+            <div class="caption">
+                Game controls & mechanics
+            </div>
+        </section>
+        <section class="section-p section-history-p">
+            <p>
+                The game concept is similar to other games in "endless runner" genre. Main idea
+                of all of them is to avoid obstacles and go further and further. But most of them
+                are one-dimensional and don't use all abilities of second dimension. Despite of it,
+                the X-Wing game gives to player breathtaking gameplay in two axes.
+            </p>
+            <p>
+                Of course there are truly exciting obstacles, which are generated procedurally.
+                Also controls haven't ever been simplier than now — just move your mouse to point
+                where you would like to see the starfighter.
+            </p>
+            <div class="redline"></div>
+        </section>
+        <section id="interesting" class="section-img section-interesting">
+            <div class="caption">Game's tech</div>
+        </section>
+        <section class="section-p section-history-p">
+            <p>
+                The game was created with great help of WebGL technology. Of course vanilla
+                WebGL is not as easy-to-use as I would like. So because of interest to 
+                voxel graphics and this graphic language I decided to use THREE.JS library,
+                that great for all kinds of 3D experience in Web.
+            </p>
+            <p>
+                Other technologies are great too, but more ordinary: of course ES6, HTML5 and CSS3.
+                Like it should be in 2017 :)
+            </p>
+            <div class="redline"></div>
+        </section>
+        <footer class="section-img section-footer">
+            <div class="caption-small caption">©wldyslw, 2017. There are no rights to reserve</div>
+        </footer>
+        <script type="text/javascript" src="script/common.js"></script>
+    </body>
+</html>

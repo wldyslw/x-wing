@@ -1,0 +1,112 @@
+.btn {
+    display: block;
+    border: none;
+    outline: none;
+    transition: all .2s;
+}
+
+.btn:hover {
+    cursor: pointer;
+}
+
+.menu-closed::before {
+    content: '\f0c9';
+}
+
+.menu-opened::before {
+    content: '\f00d';
+}
+
+.btn-hamburger {
+    z-index: 10;
+    position: fixed;
+    top: 35px;
+    right: 35px;
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    background-color: lightgray;
+}
+
+.btn-hamburger::before {
+    font-family: FontAwesome;
+    font-size: 2rem;
+    color: #212429;
+}
+
+.btn-takeatour {
+    position: relative;
+    height: 100px;
+    width: 100px;
+    background-color: lightgray;
+    font-size: 2rem;
+    border-radius: 50%;
+    margin: 30px auto;
+    color: #212429;
+}
+
+.btn-takeatour::before {
+    content: '\f04b';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    font-family: FontAwesome;
+    font-size: 6rem;
+    margin-left: 5px;
+    color: #212429;
+}
+
+@keyframes levitate {
+    0% {top: 115px;}
+    50% {top: 120px;}
+    100% {top: 115px;}
+}
+
+.btn-takeatour::after {
+    display: block;
+    width: 200px;
+    text-align: center;
+    content: 'Play it now, or scroll down';
+    position: absolute;
+    left: 50%;
+    top: 120px;
+    transform: translateX(-50%);
+    font-size: 3rem;
+    color: lightgray;
+    animation: levitate 2s forwards ease-in-out infinite;
+}
+
+.btn-linkalike {
+    font-family: Akrobat-Thin;
+    font-size: 7rem;
+    color: white;
+    opacity: .7;
+    margin: 10px 0;
+    background-color: transparent;
+    border-bottom: 2px solid transparent;
+}
+
+.btn-linkalike:hover {
+    border-bottom-color: white;
+    opacity: 1;
+}
+
+.btn-arrow {
+    z-index: 10;
+    position: fixed;
+    bottom: 35px;
+    right: 35px;
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    background-color: lightgray;
+    padding-bottom: 4px;
+}
+
+.btn-arrow::before {
+    content: '\f106';
+    font-family: FontAwesome;
+    font-size: 3.5rem;
+    color: #212429;
+}

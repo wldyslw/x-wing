@@ -1,0 +1,106 @@
+.menu {
+    z-index: 9;
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(21, 24, 29, .8);
+    transition: all .2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu button {
+    position: relative;
+    bottom: 10vh;
+}
+
+.menu-open button {
+    bottom: 0;
+}
+
+.logo {
+    display: block;
+    font-size: 5rem;
+    position: fixed;
+    top: 35px;
+    left: 35px; 
+    color: #fff;  
+}
+
+.section-p {
+    min-height: 150px;
+    background-color: #212429;
+    padding: 45px 13vw;
+    color: lightgray;
+    text-align: center;
+}
+
+.section-p b {
+    color: #fff;
+}
+
+.section-intro-p p, b {
+    font-size: 3rem;
+    line-height: 5rem;
+}
+
+.redline {
+    width: 100px;
+    height: 3px;
+    background-color: #fff;
+    margin: 40px auto;
+}
+
+.section-img {
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.caption {
+    display: block;
+    width: auto;
+    text-align: center;
+    font-size: 3rem;
+    background-color: lightgray;
+    color: #212429;
+    padding: 15px;
+}
+
+.section-intro {
+    background-image: url("../img/sect1.png");
+    min-height: 100vh;
+}
+
+.section-history {
+    background-image: url("../img/sect2.png");
+    min-height: 65vh;
+}
+
+.section-history-p p, .section-history-2 p {
+    line-height: 3rem;
+    font-size: 2rem;
+}
+
+.section-interesting {
+    background-image: url("../img/sect3.png");
+    height: 65vh;
+}
+
+.section-footer {
+    background-image: url("../img/sect4.png");
+    height: 30vh;
+}
+
+.caption-small {
+    font-size: 2rem;
+    background-color: transparent;
+    color: #fff;
+}

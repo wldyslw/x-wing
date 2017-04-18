@@ -1,0 +1,58 @@
+@font-face {
+    font-family: Akrobat-Thin;
+    src: url("../fonts/Akrobat-Thin.otf");
+}
+
+@font-face {
+    font-family: Akrobat-Regular;
+    src: url("../fonts/Akrobat-Regular.otf");
+}
+
+@font-face {
+    font-family: FontAwesome;
+    src: url("../fonts/FontAwesome.otf");
+}
+
+* {
+    font-family: Akrobat-Regular;
+    padding: 0;
+    margin: 0;
+    font-size: 10px;
+}
+
+body {
+    overflow-x: hidden;
+    background-color: whitesmoke;
+}
+
+.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+a, a:hover {
+    text-decoration: none;
+}
+
+::selection {
+  background-color: lightgray;
+  color: #212429;
+}
+::-moz-selection {
+  background-color: lightgray;
+  color: #212429;
+}
+
+.noselect {
+    cursor: default;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
