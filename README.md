@@ -1,5 +1,8 @@
-# x-wing
+# The X-Wing Game
 
-[PLAY THIS AWESOEM GAEM](https://wldyslw.github.io/x-wing/)
+**[PLAY THIS AWESOEM GAEM](https://wldyslw.github.io/x-wing/)**
 
-*Some info and landing page link soon. Please stand by*
+Slides [here](http://slides.com/wldyslw/x-wing#/)
+Landing [here](https://wldyslw.github.io/x-wing/landing)
+
+**Enjoy!**
